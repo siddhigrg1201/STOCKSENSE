@@ -1,0 +1,2 @@
+export const POPULAR_STOCKS_GLOBAL = ["TSLA", "AAPL", "NVDA", "BTC", "ETH", "GOOGL", "AMZN", "MSFT"];
+export const POPULAR_STOCKS_INDIA = ["RELIANCE", "TCS", "INFY", "HDFCBANK", "ICICIBANK", "SBIN", "ITC", "LT", "WIPRO"];

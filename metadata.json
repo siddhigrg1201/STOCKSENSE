@@ -1,0 +1,7 @@
+{
+  "name": "Remix: Remix: Remix: Remix: Remix: StockSense",
+  "description": "AI-powered stock market sentiment analysis and profit prediction dashboard for retail traders.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}

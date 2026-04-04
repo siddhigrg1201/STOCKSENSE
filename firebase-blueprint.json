@@ -1,0 +1,102 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and settings.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "settings": {
+          "type": "object",
+          "properties": {
+            "twoFactor": { "type": "boolean" },
+            "biometric": { "type": "boolean" },
+            "dataSharing": { "type": "boolean" },
+            "notifications": {
+              "type": "object",
+              "properties": {
+                "email": { "type": "boolean" },
+                "push": { "type": "boolean" },
+                "marketAlerts": { "type": "boolean" }
+              }
+            },
+            "language": { "type": "string" },
+            "region": { "type": "string" },
+            "market": { "type": "string", "enum": ["GLOBAL", "INDIA"] },
+            "currency": { "type": "string" },
+            "subscription": {
+              "type": "object",
+              "properties": {
+                "plan": { "type": "string", "enum": ["Free", "Pro"] },
+                "status": { "type": "string", "enum": ["Active", "Inactive"] },
+                "nextBilling": { "type": "string", "format": "date-time" }
+              }
+            }
+          }
+        }
+      },
+      "required": ["id", "name", "email"]
+    },
+    "Stock": {
+      "title": "Stock",
+      "description": "Represents stock market data for a symbol.",
+      "type": "object",
+      "properties": {
+        "symbol": { "type": "string" },
+        "price": { "type": "number" },
+        "change": { "type": "number" },
+        "changePercent": { "type": "number" },
+        "sentiment": { "type": "number" },
+        "confidence": { "type": "number" },
+        "impact": { "type": "string", "enum": ["High", "Medium", "Low"] },
+        "probability": { "type": "number" },
+        "lastUpdated": { "type": "string", "format": "date-time" },
+        "currency": { "type": "string" }
+      },
+      "required": ["symbol", "price", "change", "lastUpdated"]
+    },
+    "WatchlistItem": {
+      "title": "WatchlistItem",
+      "description": "A stock in a user's watchlist.",
+      "type": "object",
+      "properties": {
+        "symbol": { "type": "string" },
+        "addedAt": { "type": "string", "format": "date-time" },
+        "notes": { "type": "string" }
+      },
+      "required": ["symbol", "addedAt"]
+    },
+    "MarketEmotion": {
+      "title": "MarketEmotion",
+      "description": "Global market sentiment data.",
+      "type": "object",
+      "properties": {
+        "value": { "type": "number" },
+        "label": { "type": "string" },
+        "summary": { "type": "string" },
+        "lastUpdated": { "type": "string", "format": "date-time" }
+      },
+      "required": ["value", "label", "summary", "lastUpdated"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "User" },
+      "description": "User profile and settings."
+    },
+    "/users/{userId}/watchlist/{symbol}": {
+      "schema": { "$ref": "WatchlistItem" },
+      "description": "User's watchlist items."
+    },
+    "/stocks/{market}/symbols/{symbol}": {
+      "schema": { "$ref": "Stock" },
+      "description": "Stock data organized by market and symbol."
+    },
+    "/market/emotions": {
+      "schema": { "$ref": "MarketEmotion" },
+      "description": "Global market sentiment."
+    }
+  }
+}

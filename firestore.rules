@@ -1,0 +1,134 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {userId}
+    // Fields:
+    //   - id: string (required)
+    //   - name: string (required)
+    //   - email: string (required)
+    //   - settings: map (optional)
+    //
+    // Collection: users/{userId}/watchlist
+    // Document ID: {symbol}
+    // Fields:
+    //   - symbol: string (required)
+    //   - addedAt: string (required, ISO 8601)
+    //   - notes: string (optional)
+    //
+    // Collection: stocks/{market}/symbols
+    // Document ID: {symbol}
+    // Fields:
+    //   - symbol: string (required)
+    //   - price: number (required)
+    //   - change: number (required)
+    //   - lastUpdated: string (required, ISO 8601)
+    //
+    // Collection: market
+    // Document ID: emotions
+    // Fields:
+    //   - value: number (required)
+    //   - label: string (required)
+    //   - summary: string (required)
+    //   - lastUpdated: string (required, ISO 8601)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "freebeastboy67890@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidEmail(email) {
+      return email is string &&
+        email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidDateString(dateStr) {
+      return dateStr is string &&
+        dateStr.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*Z?$");
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUser(data) {
+      return data.id is string && data.id.size() > 0 &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             isValidEmail(data.email);
+    }
+
+    function isValidWatchlistItem(data) {
+      return data.symbol is string && data.symbol.size() > 0 && data.symbol.size() < 20 &&
+             isValidDateString(data.addedAt);
+    }
+
+    function isValidStock(data) {
+      return data.symbol is string && data.symbol.size() > 0 &&
+             data.price is number &&
+             data.change is number &&
+             isValidDateString(data.lastUpdated);
+    }
+
+    function isValidMarketEmotion(data) {
+      return data.value is number &&
+             data.label is string && data.label.size() > 0 &&
+             data.summary is string && data.summary.size() > 0 &&
+             isValidDateString(data.lastUpdated);
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      // Users can only read their own profile (PII protection)
+      allow read: if isOwner(userId) || isAdmin();
+      
+      allow create: if isOwner(userId) && isValidUser(request.resource.data) && 
+                      (!('role' in request.resource.data) || request.resource.data.role == 'user');
+      
+      allow update: if isOwner(userId) && isValidUser(request.resource.data) && 
+                      (request.resource.data.role == resource.data.role || isAdmin());
+      
+      match /watchlist/{symbol} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create, update: if isOwner(userId) && isValidWatchlistItem(request.resource.data);
+        allow delete: if isOwner(userId);
+      }
+    }
+
+    match /stocks/{market}/symbols/{symbol} {
+      allow read: if isAuthenticated();
+      // Only admins or backend can update global stock data
+      allow write: if isAdmin();
+    }
+
+    match /market/emotions {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+  }
+}
