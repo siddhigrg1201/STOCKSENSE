@@ -1,4 +1,5 @@
 OVERVIEW 
+
 StockSense is an AI-driven platform that analyzes real-time financial data and market sentiment to help users make informed investment decisions. It combines multiple data sources, filters noise, and presents clear insights for both global and Indian markets.
 
 PROBLEM
@@ -74,10 +75,12 @@ USE CASES
 	•	Comparing global and Indian market movements
 
 IMPACT
+
 StockSense simplifies complex financial data and reduces reliance on speculation by providing clear, reliable, and data-backed insights.
 
 
 FUTURE SCOPE
+
 	•	Advanced predictive analytics
 	•	Personalized investment recommendations
 	•	Risk analysis tools
